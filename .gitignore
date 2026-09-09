@@ -11,3 +11,7 @@ Graphics/xbw_read
 Eigensolver/xEigen
 Eigensolver/LIB_JDQZ/libjdqz.a
 BOOZ_XFORM/Sources/xbooz_xform
+
+# Claude Code
+CLAUDE.md
+.claude/
