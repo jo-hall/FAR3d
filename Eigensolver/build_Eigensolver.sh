@@ -6,13 +6,14 @@
 echo Welcome to FAR3d Eigensolver
 
 #These are generic flags and commands.
-Comp="ifort" 
-Flag=" -fixed"
-MKLINCLUDE="-I${MKLROOT}/include"
-MKLLINK="${MKLROOT}/lib/libmkl_intel_lp64.a ${MKLROOT}/lib/libmkl_core.a ${MKLROOT}/lib/libmkl_sequential.a -lpthread -lm"
+#Comp="ifort"
+#Flag=" -fixed"
+#MKLINCLUDE="-I${MKLROOT}/include"
+#MKLLINK="${MKLROOT}/lib/libmkl_intel_lp64.a ${MKLROOT}/lib/libmkl_core.a ${MKLROOT}/lib/libmkl_sequential.a -lpthread -lm"
 
-#Comp="gfortran" 
-#Flag=" -ffixed-form"
+#macOS (MacPorts gfortran + OpenBLAS, no MKL/ifort available):
+Comp="gfortran"
+Flag=" -ffixed-form"
 #Flag=" -ffixed-form -Wall -fcheck=all -g -fbacktrace -Wno-tabs"
 #Flag=" -ffixed-form -Wall -g -frange-check -fbounds-check -Wcharacter-truncation -fcheck=all -fbacktrace -ffpe-trap=invalid -ftrapv -Waliasing -Wampersand -Wconversion -Wsurprising -Wc-binding-type -Wintrinsics-std -Wintrinsic-shadow -Wline-truncation -Wtarget-lifetime -Wno-tabs"
 
@@ -30,8 +31,8 @@ OBJS3=" LIB_JDQZ/zmgs.f LIB_JDQZ/zones.f LIB_JDQZ/zxpay.f LIB_JDQZ/zzeros.f"
 OBJS4=" grandom_mod.f90 symtrd_mod.f90 myjdqz_mod_TAEFL_cmplx.f90 main_jdqz_TAEFL_cmplx.f90"
 
 #lapack library:
-#OBJS5=" -I. -lblas -llapack"
-OBJS5=" -I. $MKLINCLUDE $MKLLINK"
+OBJS5=" -I. -L/opt/local/lib -lopenblas"
+#OBJS5=" -I. $MKLINCLUDE $MKLLINK"
 
 $Comp -o $Exc $Opt $Flag $OBJS $OBJS2 $OBJS3 $OBJS4 $OBJS5
 
