@@ -273,7 +273,7 @@ CONTAINS
   end subroutine decbt
 
   subroutine solbt (m, n, a, b, c, y, ip)
-    use cudafor
+
     implicit none
 
     integer :: m, n
@@ -300,73 +300,56 @@ CONTAINS
 
     integer :: nm1, nm2, km1, i, j, k, kp1, kb
     real(IDP) :: dp
-    integer pref
     nm1 = n - 1
     nm2 = n - 2
-    pref = cudaMemPrefetchAsync(C_DEVLOC(b),sizeof(b),0,cudaforGetDefaultStream())
-    pref = cudaMemPrefetchAsync(C_DEVLOC(c),sizeof(c),0,cudaforGetDefaultStream())
-    pref = cudaMemAdvise(C_DEVLOC(y), sizeof(y), cudaMemAdviseSetAccessedBy, 0)
-    pref = cudaDeviceSynchronize()
     ! forward solution sweep. ----------------------------------------------
     call sol (m, a(:,:,1), y(:,1), ip(:,1))
     do k = 2,nm1
        km1 = k - 1
-       !$ACC PARALLEL num_gangs(m) vector_length(m) async(1)
-       !$ACC loop gang private(dp)
+       !$OMP PARALLEL DO PRIVATE(dp)
        do i = 1,m
           dp = 0.
-          !$ACC LOOP reduction(+:dp)
           do j = 1,m
              dp = dp + c(i,j,k)*y(j,km1)
           end do
           y(i,k) = y(i,k) - dp
        end do
-       !$ACC END PARALLEL
-       !$ACC WAIT(1)
+       !$OMP END PARALLEL DO
        call sol (m, a(:,:,k), y(:,k), ip(:,k))
     end do
-    !$ACC PARALLEL num_gangs(m) vector_length(m) async(1)
-    !$ACC LOOP GANG private(dp)
+    !$OMP PARALLEL DO PRIVATE(dp)
     do i = 1,m
        dp = 0.
-       !$ACC LOOP VECTOR REDUCTION(+:dp)
        do j = 1,m
           dp = dp + c(i,j,n)*y(j,nm1) + b(i,j,n)*y(j,nm2)
        end do
        y(i,n) = y(i,n) - dp
     end do
-    !$ACC END PARALLEL
-    !$ACC WAIT(1)
+    !$OMP END PARALLEL DO
     call sol (m, a(:,:,n), y(:,n), ip(:,n))
     ! backward solution sweep. ---------------------------------------------
     do kb = 1,nm1
        k = n - kb
        kp1 = k + 1
-       !$ACC PARALLEL num_gangs(m) vector_length(m) ASYNC(1)
-       !$ACC LOOP GANG private(dp)
+       !$OMP PARALLEL DO PRIVATE(dp)
        do i = 1,m
           dp = 0.
-          !$ACC LOOP VECTOR REDUCTION(+:dp)
           do j = 1,m
              dp = dp + b(i,j,k)*y(j,kp1)
           end do
           y(i,k) = y(i,k) - dp
        end do
-       !$ACC END PARALLEL
-       !$ACC WAIT(1)
+       !$OMP END PARALLEL DO
     end do
-    !$ACC PARALLEL num_gangs(m) vector_length(m) async(1)
-    !$ACC LOOP GANG private(dp)
+    !$OMP PARALLEL DO PRIVATE(dp)
     do i = 1,m
        dp = 0.
-       !$ACC LOOP VECTOR REDUCTION(+:dp)
        do j = 1,m
           dp = dp + c(i,j,1)*y(j,3)
        end do
        y(i,1) = y(i,1) - dp
     end do
-    !$ACC END parallel
-    !$ACC WAIT(1)
+    !$OMP END PARALLEL DO
 
   end subroutine solbt
 
