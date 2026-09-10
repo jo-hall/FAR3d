@@ -13,6 +13,11 @@ endif()
 
 set(CMAKE_Fortran_FLAGS_DEBUG "${DEBUG_FLAGS}")
 
+# Enable the Fortran preprocessor so files can gate GPU-only code (e.g. OpenACC
+# device init in far3d.f90) behind #ifdef _OPENACC, which compilers only define
+# when an OpenACC-enabling flag (-fopenacc / -acc=...) is actually passed.
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp")
+
 # -------------------------
 # Find MPI
 # -------------------------

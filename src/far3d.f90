@@ -78,9 +78,11 @@ program far3d
 ! Find the ID of this PE
   call MPI_COMM_RANK(MPI_COMM_WORLD, myPE  , ierror)
   numPEsm1 = numPEs-1
+#ifdef _OPENACC
   numdev = acc_get_num_devices(ACC_DEVICE_NVIDIA)
   call acc_set_device_num(myPE,ACC_DEVICE_NVIDIA)
   call acc_init(ACC_DEVICE_NVIDIA)
+#endif
   
   ! if (myPE == 0) write(0,'(" ====> Checking input list ... ")')
 
