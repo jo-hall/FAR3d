@@ -145,7 +145,7 @@ CONTAINS
              tag=le*numPEs+iPE
              call MPI_RECV(sd1(mj_br(iPE)),mj_inc(iPE),MPI_DOUBLE_PRECISION,iPE,tag,MPI_COMM_WORLD,status,ierr)
           end do
-          f(mj_br(1):mj,l)=sd1(mj_br(1):mj)
+          if (numPEsm1 >= 1) f(mj_br(1):mj,l)=sd1(mj_br(1):mj)
        end if
 
     end do

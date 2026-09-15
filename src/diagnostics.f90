@@ -410,7 +410,9 @@ CONTAINS
     sc5(:,:) = 0.0_IDP; sc6(:,:) = 0.0_IDP
     sc7(:,:) = 0.0_IDP; sc8(:,:) = 0.0_IDP
     sc9(:,:) = 0.0_IDP; sc10(:,:) = 0.0_IDP
-    sc11(:,:) = 0.0_IDP; sc12(:,:) = 0.0_IDP
+    if (alpha_on == 1) then
+       sc11(:,:) = 0.0_IDP; sc12(:,:) = 0.0_IDP
+    end if
 
     !  v_ExB_r * nf  (goes into sc6,sc10)
 
