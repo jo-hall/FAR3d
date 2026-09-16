@@ -28,6 +28,7 @@ program far3d
   use tools
   use scratch
   use openacc
+  use input_model
   
   implicit none
 
@@ -55,6 +56,7 @@ program far3d
   character(len=14) :: phi_hifrq_out
   character(len=2), dimension(3) :: numrunp
   character(len=5) :: numvac
+  logical :: use_input_model
 
 !  Input read 
                                                    
@@ -86,10 +88,15 @@ program far3d
   
   ! if (myPE == 0) write(0,'(" ====> Checking input list ... ")')
 
-  open (unit=5,file="farin",status="old")
-  
-  read(5,'(i1,2x,2a2,2x,2a2,a1,2x,a40)') nstres,(numrun(i),i=1,2),(numruno(i),i=1,3),eq_name
-  rewind(5)
+  inquire(file="Input_Model",exist=use_input_model)
+  if (use_input_model) then
+     open (unit=5,file="Input_Model",status="old")
+     call peek_input_model_header(5)
+  else
+     open (unit=5,file="farin",status="old")
+     read(5,'(i1,2x,2a2,2x,2a2,a1,2x,a40)') nstres,(numrun(i),i=1,2),(numruno(i),i=1,3),eq_name
+     rewind(5)
+  end if
 
   t=char(9)
 
@@ -115,46 +122,96 @@ program far3d
 
   call dfault
 
-  read(5,'(i1,2x,2a2,2x,2a2,a1,2x,a40)') nstres,(numrun(i),i=1,2),(numruno(i),i=1,3),eq_name
+  if (use_input_model) then
 
-  if (nstres /= 0) then
+     call peek_input_model_header(5)
 
-     confil="fs"//numruno(1)//numruno(2)//numruno(3)
-     open(unit=8,file=confil,status='old',convert='big_endian',form='unformatted')
+     if (nstres /= 0) then
 
-     read(8) ihist
-     rewind(8)
+        confil="fs"//numruno(1)//numruno(2)//numruno(3)
+        open(unit=8,file=confil,status='old',convert='big_endian',form='unformatted')
 
-  end if
+        read(8) ihist
+        rewind(8)
 
-  ihist=ihist+1
-
-  allocate (numhist(ihist))
-
-  if (nstres /= 0) then
-
-     read(8) idum,numrunp,numrunp,numrunp,idum,numvac,(numhist(i),i=1,ihist-1),(idum,i=1,10),dum,(idum,i=1,6), &
-             (dum,i=1,8),ext_prof,epflr_on,r_epflr,alpha_on,iflr_on,iflr,idum,ieldamp_on,(dum,i=1,9),r_epflralp
-     read(8) mjo,lmaxo,leqmaxo
-     rewind(8)
-
-     mj=mjo
-     lmax=lmaxo
-     leqmax=leqmaxo
-
-  end if
-
-  read(5,nam_par)
-
-  if (nstres /= 0) then
-
-     if (mj /= mjo) then
-        mj=mjo
-        if (myPE == 0) write(6,'(/"Grid points cannot be changed"/)')
      end if
-     if (leqmax /= leqmaxo) then
+
+     ihist=ihist+1
+
+     allocate (numhist(ihist))
+
+     if (nstres /= 0) then
+
+        read(8) idum,numrunp,numrunp,numrunp,idum,numvac,(numhist(i),i=1,ihist-1),(idum,i=1,10),dum,(idum,i=1,6), &
+                (dum,i=1,8),ext_prof,epflr_on,r_epflr,alpha_on,iflr_on,iflr,idum,ieldamp_on,(dum,i=1,9),r_epflralp
+        read(8) mjo,lmaxo,leqmaxo
+        rewind(8)
+
+        mj=mjo
+        lmax=lmaxo
         leqmax=leqmaxo
-        if (myPE == 0) write(6,'(/"Equilibrium modes cannot be changed"/)')
+
+     end if
+
+     call read_input_model(5)
+
+     if (nstres /= 0) then
+
+        if (mj /= mjo) then
+           mj=mjo
+           if (myPE == 0) write(6,'(/"Grid points cannot be changed"/)')
+        end if
+        if (leqmax /= leqmaxo) then
+           leqmax=leqmaxo
+           if (myPE == 0) write(6,'(/"Equilibrium modes cannot be changed"/)')
+        end if
+
+     end if
+
+  else
+
+     read(5,'(i1,2x,2a2,2x,2a2,a1,2x,a40)') nstres,(numrun(i),i=1,2),(numruno(i),i=1,3),eq_name
+
+     if (nstres /= 0) then
+
+        confil="fs"//numruno(1)//numruno(2)//numruno(3)
+        open(unit=8,file=confil,status='old',convert='big_endian',form='unformatted')
+
+        read(8) ihist
+        rewind(8)
+
+     end if
+
+     ihist=ihist+1
+
+     allocate (numhist(ihist))
+
+     if (nstres /= 0) then
+
+        read(8) idum,numrunp,numrunp,numrunp,idum,numvac,(numhist(i),i=1,ihist-1),(idum,i=1,10),dum,(idum,i=1,6), &
+                (dum,i=1,8),ext_prof,epflr_on,r_epflr,alpha_on,iflr_on,iflr,idum,ieldamp_on,(dum,i=1,9),r_epflralp
+        read(8) mjo,lmaxo,leqmaxo
+        rewind(8)
+
+        mj=mjo
+        lmax=lmaxo
+        leqmax=leqmaxo
+
+     end if
+
+     read(5,nam_par)
+
+     if (nstres /= 0) then
+
+        if (mj /= mjo) then
+           mj=mjo
+           if (myPE == 0) write(6,'(/"Grid points cannot be changed"/)')
+        end if
+        if (leqmax /= leqmaxo) then
+           leqmax=leqmaxo
+           if (myPE == 0) write(6,'(/"Equilibrium modes cannot be changed"/)')
+        end if
+
      end if
 
   end if
@@ -195,14 +252,18 @@ program far3d
 
   if (ext_prof == 0) ieldamp_on = 0
 
-  allocate (mm(lmax),nn(lmax),mh(lmax),nh(lmax),mmeq(leqmax),nneq(leqmax),mheq(leqmax),nheq(leqmax))
+  if (.not. use_input_model) then
+     allocate (mm(lmax),nn(lmax),mh(lmax),nh(lmax),mmeq(leqmax),nneq(leqmax),mheq(leqmax),nheq(leqmax))
+  end if
   allocate (r(0:mj),rinv(0:mj),dc1m(mj),dc1p(mj),dc2m(mj),dc2p(mj),del2cm(mj),del2cp(mj),rs(lmax))
   allocate (wt1m(mj,2),wt10(mj,2),wt1p(mj,2),wt2m(mj,2),wt20(mj,2),wt2p(mj,2))
   allocate (signl(lmax),jsl(lmax),sgnleq(leqmax))
   allocate (qq(0:mj),qqinv(0:mj),qqinvp(0:mj),denseq(0:mj),denseqr(0:mj),preq(0:mj),feq(0:mj), &
             cureq(0:mj),teeq(0:mj),tieq(0:mj),nfeq(0:mj),dnfeqdr(0:mj),dpreqdr(0:mj),vfova(0:mj),vzt_eq(0:mj), &
             vth_eq(0:mj),vfova2(0:mj),vtherm_elc(0:mj),nalpeq(0:mj),valphaova(0:mj),valphaova2(0:mj),dnalpeqdr(0:mj))
-  allocate (eta(0:mj),widthi(lmax),gammai(lmax))
+  if (.not. use_input_model) then
+     allocate (eta(0:mj),widthi(lmax),gammai(lmax))
+  end if
   allocate (sceq1(0:mj,0:leqmax),sceq2(0:mj,0:leqmax),sceq3(0:mj,0:leqmax),sceq4(0:mj,0:leqmax),sceq5(0:mj,0:leqmax), &
             sceq6(0:mj,0:leqmax))
   allocate (sd1(0:mj),sd2(0:mj),sd3(0:mj),sd4(0:mj),sd5(0:mj),sd6(0:mj),sd7(0:mj))
@@ -215,9 +276,11 @@ program far3d
   dc2p=0.0_IDP;del2cm=0.0_IDP;del2cp=0.0_IDP;rs=0.0_IDP
   wt1m=0.0_IDP;wt10=0.0_IDP;wt1p=0.0_IDP;wt2m=0.0_IDP;wt20=0.0_IDP;wt2p=0.0_IDP
   signl=0.0_IDP;jsl=0.0_IDP;sgnleq=0.0_IDP
-  widthi=0.0
-  gammai=0.0
-  read(5,nam_arr)
+  if (.not. use_input_model) then
+     widthi=0.0
+     gammai=0.0
+     read(5,nam_arr)
+  end if
 
 !  nstres indicates if the run is a new run or a continuation
 !  If it is a new run the inital subroutine is called

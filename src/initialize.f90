@@ -108,6 +108,7 @@ CONTAINS
     use equilibrium
     use output_mod
     use scratch
+    use input_model
 
     implicit none
 
@@ -127,16 +128,22 @@ CONTAINS
     integer :: i,j,l,idum,ierr,iPE,tag
     integer, dimension(MPI_STATUS_SIZE) :: status
     real(IDP) :: dum
+    logical :: use_input_model
 
     ! This subroutine is called if the simulation is a continuation run
 
     ! Subroutine rddump reads the data required to continue the run
     call rddump
 
+    inquire(file="Input_Model",exist=use_input_model)
     rewind(5)
-    read(5,'(i1,2x,2a2,2x,2a2,a1)') nstres,(numrun(i),i=1,2),(numruno(i),i=1,3)
-    read(5,nam_par)
-    read(5,nam_arr)
+    if (use_input_model) then
+       call read_input_model_resume(5)
+    else
+       read(5,'(i1,2x,2a2,2x,2a2,a1)') nstres,(numrun(i),i=1,2),(numruno(i),i=1,3)
+       read(5,nam_par)
+       read(5,nam_arr)
+    end if
 
     ! Subroutine setmod set up the modes of the model
     call setmod
