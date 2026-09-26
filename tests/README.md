@@ -7,6 +7,10 @@ Two layers, both run through CTest:
 | `unit` | Fortran programs that call individual FAR3d routines and check them against exact answers | < 1 s |
 | `regression` | Python scripts that run `far3d.x` on a small DIII-D case and check physics properties and stored reference values | ~25 s with `-j4` |
 
+Performance and scaling benchmarks live separately in
+[`performance/`](performance/README.md) and are run with
+`run_benchmarks.py` (or `make perf`), not ctest.
+
 ## Running
 
 From `src/`, the usual build directory:
@@ -52,6 +56,11 @@ tests/
     test_linear.py
     test_nonlinear.py
     reference/*.json      stored reference values (golden master)
+  performance/            scaling benchmarks, not run by ctest (see performance/README.md)
+    benchmarks.py         benchmark definitions and validation
+    run_benchmarks.py     driver: sweeps ranks/threads, writes results/<label>.json
+    compare_results.py    side-by-side comparison of result files
+    reference/            reference fingerprint for the nonlinear benchmark
 ```
 
 The unit tests link against `far3d_core`, a static library of every source

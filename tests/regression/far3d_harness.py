@@ -27,6 +27,7 @@ import re
 import shutil
 import struct
 import subprocess
+import time
 from pathlib import Path
 
 import numpy as np
@@ -193,10 +194,11 @@ def base_case(**overrides):
 # ---------------------------------------------------------------------------
 
 class Run:
-    def __init__(self, directory, numrun, stdout):
+    def __init__(self, directory, numrun, stdout, elapsed=None):
         self.dir = Path(directory)
         self.numrun = numrun            # e.g. "0000"
         self.stdout = stdout
+        self.elapsed = elapsed          # wall-clock seconds of the MPI launch
 
     def path(self, name):
         return self.dir / name
@@ -212,12 +214,15 @@ class Run:
         return read_dump(self.dir / ("fs%s_%05d" % (self.numrun, index)))
 
 
-def run_case(case, name, nproc=1, input_format="input_model", fresh=True, timeout=600):
-    """Run far3d.x on `case` in WORKDIR/name and return a Run.
+def run_case(case, name, nproc=1, input_format="input_model", fresh=True, timeout=600,
+             workdir=None, exe=None, mpiexec_args=(), env=None):
+    """Run far3d.x on `case` in <workdir>/name and return a Run.
 
     fresh=False reuses an existing directory (for continuation runs, which
-    read the previous run's dump from the working directory)."""
-    rundir = WORKDIR / name
+    read the previous run's dump from the working directory). workdir, exe,
+    mpiexec_args (extra launcher options, e.g. binding flags) and env
+    (environment for the MPI launch) default to the FAR3D_* settings."""
+    rundir = Path(workdir or WORKDIR) / name
     if fresh and rundir.exists():
         shutil.rmtree(rundir)
     rundir.mkdir(parents=True, exist_ok=True)
@@ -236,13 +241,15 @@ def run_case(case, name, nproc=1, input_format="input_model", fresh=True, timeou
         raise ValueError(input_format)
 
     mpiexec = os.environ.get("FAR3D_MPIEXEC") or "mpirun"
-    cmd = [mpiexec, "-n", str(nproc), far3d_exe()]
+    cmd = [mpiexec, "-n", str(nproc)] + list(mpiexec_args) + [exe or far3d_exe()]
+    start = time.perf_counter()
     proc = subprocess.run(cmd, cwd=rundir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                          text=True, timeout=timeout)
+                          text=True, timeout=timeout, env=env)
+    elapsed = time.perf_counter() - start
     (rundir / "stdout.log").write_text(proc.stdout)
     if proc.returncode != 0 or "Simulation DONE" not in proc.stdout:
         raise RuntimeError("far3d.x failed in %s (exit %d):\n%s" % (rundir, proc.returncode, proc.stdout[-3000:]))
-    return Run(rundir, "".join(case["numrun"].split()), proc.stdout)
+    return Run(rundir, "".join(case["numrun"].split()), proc.stdout, elapsed)
 
 
 # ---------------------------------------------------------------------------

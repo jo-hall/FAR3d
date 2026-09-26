@@ -13,7 +13,7 @@ GPU_FC      := ftn
 GPU_FFLAGS  := -O3 -mp -acc=gpu -gpu=managed -Minstrument -traceback -cuda
 GPU_LDFLAGS := -lnvhpcwrapnvtx -cuda
 
-.PHONY: all debug gpu test clean
+.PHONY: all debug gpu test perf clean
 
 # Python (with numpy) for the regression tests: make test PYTHON=/path/to/python3
 PYTHON_FLAG := $(if $(PYTHON),-DFAR3D_TEST_PYTHON=$(PYTHON))
@@ -44,6 +44,14 @@ gpu: $(BUILD_GPU)
 # (tests/README.md). Pass CTEST_ARGS, e.g. make test CTEST_ARGS="-L unit".
 test: all
 	@cd $(BUILD_RELEASE) && ctest --output-on-failure $(CTEST_ARGS)
+
+# Build the release configuration, then run the performance benchmarks
+# (tests/performance/README.md) on it. Pass options in PERF_ARGS, e.g.
+#   make perf PYTHON=/opt/homebrew/bin/python3.11 PERF_ARGS="--np 1 2 4 --label mymachine"
+# Benchmark the GPU build with run_benchmarks.py --exe ../build-gpu/far3d.x directly.
+perf: all
+	@cd ../tests/performance && $(or $(PYTHON),python3) run_benchmarks.py \
+	  --exe $(abspath $(BUILD_RELEASE))/far3d.x $(PERF_ARGS)
 
 # Directory creation rules
 $(BUILD_RELEASE) $(BUILD_DEBUG) $(BUILD_GPU):
