@@ -34,6 +34,22 @@ find_package(OpenMP REQUIRED)
 # Automatically include all Fortran source files
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.f90 src/*.F90 src/*.f)
 
+# GPU build: swap the CPU block-tridiagonal solver (src/matrix.f90) for the
+# OpenACC/CUDA Fortran version (matrix_gpu.f90). Both define MODULE matrix.
+# matrix_gpu.f90 uses the cudafor module, so this needs the NVIDIA HPC SDK
+# compiler (nvfortran, or a Cray ftn wrapper around it) with -acc -cuda flags;
+# src/Makefile's `gpu` target sets all of this.
+option(FAR3D_GPU "Build the OpenACC/CUDA GPU solver (matrix_gpu.f90) instead of the CPU one" OFF)
+if(FAR3D_GPU)
+    if(NOT CMAKE_Fortran_COMPILER_ID MATCHES "^(NVHPC|PGI)$")
+        message(FATAL_ERROR "FAR3D_GPU=ON requires the NVIDIA HPC SDK Fortran compiler "
+                            "(found ${CMAKE_Fortran_COMPILER_ID}: ${CMAKE_Fortran_COMPILER})")
+    endif()
+    list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/matrix.f90)
+    list(APPEND SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/matrix_gpu.f90)
+    message(STATUS "FAR3D_GPU: using matrix_gpu.f90 (OpenACC/CUDA solver)")
+endif()
+
 # Everything except the main program goes into a static library, so the unit
 # tests in tests/ can link against the same compiled modules as far3d.x.
 set(MAIN_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/far3d.f90)

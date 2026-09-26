@@ -8,7 +8,8 @@ BUILD_RELEASE := ../build-release
 BUILD_DEBUG   := ../build-debug
 BUILD_GPU     := ../build-gpu
 
-# GPU build flags
+# GPU build flags (NVIDIA HPC SDK). ftn is the Cray compiler wrapper; on other
+# systems use the NVHPC MPI wrapper, e.g. make gpu GPU_FC=mpif90
 GPU_FC      := ftn
 GPU_FFLAGS  := -O3 -mp -acc=gpu -gpu=managed -Minstrument -traceback -cuda
 GPU_LDFLAGS := -lnvhpcwrapnvtx -cuda
@@ -33,7 +34,7 @@ debug: $(BUILD_DEBUG)
 gpu: $(BUILD_GPU)
 	@cd $(BUILD_GPU) && \
 	export OMPI_MCA_opal_cuda_support=0 && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
+	cmake -DCMAKE_BUILD_TYPE=Release -DFAR3D_GPU=ON \
 	  -DCMAKE_Fortran_COMPILER=$(GPU_FC) \
 	  -DCMAKE_Fortran_FLAGS="$(GPU_FFLAGS)" \
 	  -DCMAKE_EXE_LINKER_FLAGS="$(GPU_LDFLAGS)" \
