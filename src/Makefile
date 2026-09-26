@@ -13,11 +13,14 @@ GPU_FC      := ftn
 GPU_FFLAGS  := -O3 -mp -acc=gpu -gpu=managed -Minstrument -traceback -cuda
 GPU_LDFLAGS := -lnvhpcwrapnvtx -cuda
 
-.PHONY: all debug gpu clean
+.PHONY: all debug gpu test clean
+
+# Python (with numpy) for the regression tests: make test PYTHON=/path/to/python3
+PYTHON_FLAG := $(if $(PYTHON),-DFAR3D_TEST_PYTHON=$(PYTHON))
 
 all: $(BUILD_RELEASE)
 	@cd $(BUILD_RELEASE) && \
-	cmake -DCMAKE_BUILD_TYPE=Release \
+	cmake -DCMAKE_BUILD_TYPE=Release $(PYTHON_FLAG) \
 	  -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx \
 	  -DCMAKE_Fortran_COMPILER=mpif90 .. && \
 	$(MAKE_CMD)
@@ -36,6 +39,11 @@ gpu: $(BUILD_GPU)
 	  -DCMAKE_EXE_LINKER_FLAGS="$(GPU_LDFLAGS)" \
 	  .. && \
 	$(MAKE_CMD)
+
+# Build the release configuration, then run the unit and regression tests
+# (tests/README.md). Pass CTEST_ARGS, e.g. make test CTEST_ARGS="-L unit".
+test: all
+	@cd $(BUILD_RELEASE) && ctest --output-on-failure $(CTEST_ARGS)
 
 # Directory creation rules
 $(BUILD_RELEASE) $(BUILD_DEBUG) $(BUILD_GPU):

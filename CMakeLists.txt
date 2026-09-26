@@ -34,18 +34,34 @@ find_package(OpenMP REQUIRED)
 # Automatically include all Fortran source files
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.f90 src/*.F90 src/*.f)
 
-# -------------------------
-# Add executable
-# -------------------------
-add_executable(far3d.x ${SOURCES})
-target_include_directories(far3d.x PRIVATE)
-# -------------------------
-# Link libraries
-# -------------------------
-target_link_libraries(far3d.x
+# Everything except the main program goes into a static library, so the unit
+# tests in tests/ can link against the same compiled modules as far3d.x.
+set(MAIN_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/far3d.f90)
+list(REMOVE_ITEM SOURCES ${MAIN_SOURCE})
+
+add_library(far3d_core STATIC ${SOURCES})
+set_target_properties(far3d_core PROPERTIES
+    Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/modules)
+target_include_directories(far3d_core PUBLIC ${CMAKE_BINARY_DIR}/modules)
+target_link_libraries(far3d_core PUBLIC
     MPI::MPI_Fortran
     OpenMP::OpenMP_Fortran
 )
+
+# -------------------------
+# Add executable
+# -------------------------
+add_executable(far3d.x ${MAIN_SOURCE})
+target_link_libraries(far3d.x PRIVATE far3d_core)
+
+# -------------------------
+# Tests (ctest); disable with -DBUILD_TESTING=OFF. See tests/README.md.
+# -------------------------
+option(BUILD_TESTING "Build the FAR3d unit and regression tests" ON)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 # -------------------------
 # Optional: Compiler flags
 # -------------------------

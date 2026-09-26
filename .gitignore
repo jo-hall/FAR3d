@@ -11,6 +11,8 @@ Graphics/xbw_read
 Eigensolver/xEigen
 Eigensolver/LIB_JDQZ/libjdqz.a
 BOOZ_XFORM/Sources/xbooz_xform
+tests/runs/
+__pycache__/
 
 # Claude Code
 CLAUDE.md
