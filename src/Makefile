@@ -8,11 +8,15 @@ BUILD_RELEASE := ../build-release
 BUILD_DEBUG   := ../build-debug
 BUILD_GPU     := ../build-gpu
 
-# GPU build flags (NVIDIA HPC SDK). ftn is the Cray compiler wrapper; on other
-# systems use the NVHPC MPI wrapper, e.g. make gpu GPU_FC=mpif90
-GPU_FC      := ftn
+# GPU build flags (NVIDIA HPC SDK). GPU_FC defaults to the NVHPC-bundled MPI
+# wrapper; override with e.g. `make gpu GPU_FC=ftn GPU_CC=cc` on Cray systems.
+GPU_FC      ?= mpif90
+GPU_CC      ?= mpicc
 GPU_FFLAGS  := -O3 -mp -acc=gpu -gpu=managed -Minstrument -traceback -cuda
-GPU_LDFLAGS := -lnvhpcwrapnvtx -cuda
+# Linked only into Fortran executables: libnvhpcwrapnvtx needs the Fortran
+# runtime, so passing it via CMAKE_EXE_LINKER_FLAGS breaks CMake's C compiler
+# check. (-cuda reaches the link line through GPU_FFLAGS.)
+GPU_FLIBS   := -lnvhpcwrapnvtx
 
 .PHONY: all debug gpu test perf clean
 
@@ -35,9 +39,10 @@ gpu: $(BUILD_GPU)
 	@cd $(BUILD_GPU) && \
 	export OMPI_MCA_opal_cuda_support=0 && \
 	cmake -DCMAKE_BUILD_TYPE=Release -DFAR3D_GPU=ON \
+	  -DCMAKE_C_COMPILER=$(GPU_CC) \
 	  -DCMAKE_Fortran_COMPILER=$(GPU_FC) \
 	  -DCMAKE_Fortran_FLAGS="$(GPU_FFLAGS)" \
-	  -DCMAKE_EXE_LINKER_FLAGS="$(GPU_LDFLAGS)" \
+	  -DCMAKE_Fortran_STANDARD_LIBRARIES="$(GPU_FLIBS)" \
 	  .. && \
 	$(MAKE_CMD)
 
