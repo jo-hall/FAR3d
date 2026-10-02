@@ -5,15 +5,12 @@ dominated by the solver rather than process startup, and (b) checkable, so
 a timing on a new machine, process count or architecture only counts if the
 answer is still right.
 
-Cost model. A run of N time steps costs roughly
-
-    T(N) = T_setup + N * t_step
-
-where T_setup covers MPI start-up, reading and mapping the equilibrium,
-assembling and LU-factoring the linear operator (linstart), and the end-of-run
-diagnostics and output, and t_step is one time step (solve). The driver times
-each configuration at two step counts, `short_steps` and `long_steps`, and
-separates the two terms. Validation is done on the long run.
+Timing. Every run is made with timing_on=1, so FAR3d itself writes the
+setup time (initialization and linstart) and, for every time step, the step
+time split into linear / nonlinear / comm / gather / diag (src/timers.f90,
+read with far3d_harness.read_timing). The driver runs each configuration for
+`steps` time steps, after an untimed warm-up of `warmup_steps`, and
+validates the timed run.
 
 Adding a benchmark: write a function returning a Benchmark and add it to
 BENCHMARKS. A nonlinear mode-count sweep, for example, would be a family of
@@ -38,8 +35,8 @@ class Benchmark:
     name: str
     description: str
     make_case: Callable[[int], "h.Case"]     # steps -> input deck
-    short_steps: int
-    long_steps: int
+    warmup_steps: int                         # untimed warm-up run length
+    steps: int                                # timed (and validated) run length
     validate: Callable[["h.Run"], List[str]]  # returns a list of problems (empty = valid)
     parallelism: str                          # what the MPI decomposition can use, for the report
     extra: Dict = field(default_factory=dict)
@@ -113,8 +110,8 @@ def linear_diiid():
         description="Linear DIII-D TAE, mj=1000, 3 toroidal families (n=1,2,3; 4 harmonics each), "
                     "1000 steps of dt=2. n=1 must reproduce the known gamma/omega of Models/DIIID.",
         make_case=linear_case,
-        short_steps=1,
-        long_steps=1000,
+        warmup_steps=1,
+        steps=1000,
         validate=linear_validate,
         parallelism="linear solve distributed over 3 toroidal families: MPI speedup saturates at 3 ranks",
     )
@@ -181,8 +178,8 @@ def nonlinear_diiid():
         description="Nonlinear DIII-D, Models/DIIID/Input_Model (mj=400, 8 n=1 + 21 n=0 modes, dt=0.01) "
                     "with m0dy=21 and seed 1e-4, 100 steps.",
         make_case=nonlinear_case,
-        short_steps=2,
-        long_steps=102,
+        warmup_steps=2,
+        steps=102,
         validate=nonlinear_validate,
         parallelism="linear solve over 2 families (n=0 with 21 modes dominates); "
                     "nonlinear products over radial slabs (all ranks)",

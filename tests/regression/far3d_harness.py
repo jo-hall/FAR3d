@@ -18,6 +18,8 @@ The pieces:
   * read_dump -- read a binary fs##### dump (records written by wrdump in
                  src/output_mod.f90) into numpy arrays.
   * read_growth_rates, read_table -- parse farprt and the per-mode energy files.
+  * read_timing -- parse the per-step timing file written with timing_on=1
+                 (src/timers.f90).
   * Reference -- load/compare/update JSON reference values.
 """
 
@@ -122,6 +124,15 @@ class Case:
     def __contains__(self, name):
         return any(e[0] == name.lower() for e in self.entries)
 
+    TIMING_COMMENT = "!!!!!!!!!!! timing_on: 1 = write per-step timing file timing_<numrun>"
+
+    def enable_timing(self, on=True):
+        """Set timing_on, appending it as the optional trailing Input_Model
+        field (src/input_model.f90) if the deck does not have it yet."""
+        if "timing_on" not in self:
+            self.entries.append(["timing_on", self.TIMING_COMMENT, "0"])
+        return self.set(timing_on=1 if on else 0)
+
     def set(self, **values):
         """Set values by name. Python values are converted to Fortran text:
         bool -> .true./.false., float -> repr, list -> comma separated."""
@@ -219,6 +230,9 @@ class Run:
 
     def dump(self, index):
         return read_dump(self.dir / ("fs%s_%05d" % (self.numrun, index)))
+
+    def timing(self):
+        return read_timing(self.dir / ("timing_" + self.numrun))
 
 
 def run_case(case, name, nproc=1, input_format="input_model", fresh=True, timeout=600,
@@ -417,6 +431,38 @@ def read_growth_rates(farprt):
         if m:
             out.append(dict(var=m.group(1), m=int(m.group(2)), n=int(m.group(3)),
                             gamma=fortran_float(m.group(4)), omega=fortran_float(m.group(5))))
+    return out
+
+
+TIMING_COLUMNS = ("step", "time", "total", "linear", "nonlinear", "comm", "gather", "diag", "other")
+
+
+def read_timing(path):
+    """Per-step timing file written by src/timers.f90 (timing_on=1).
+
+    Returns a dict with the header fields (ranks, omp_threads, build, nonlin,
+    mj, lmax, maxstp, setup_init_s, setup_linstart_s), "steps": one numpy
+    array per column of TIMING_COLUMNS, and "summary": the closing line's
+    fields (sum_total, ..., finalize_s), or {} if the run did not finish."""
+    out = {"summary": {}}
+    rows = []
+    for line in Path(path).read_text().splitlines():
+        if line.startswith("#"):
+            fields = dict(re.findall(r"(\w+)=\s*(\S+)", line))
+            target = out["summary"] if line.startswith("# summary:") else out
+            for k, v in fields.items():
+                try:
+                    target[k] = int(v)
+                except ValueError:
+                    try:
+                        target[k] = float(v)
+                    except ValueError:
+                        target[k] = v
+        elif line.strip():
+            rows.append([float(x) for x in line.split()])
+    data = np.array(rows).reshape(-1, len(TIMING_COLUMNS))
+    out["steps"] = {name: data[:, i] for i, name in enumerate(TIMING_COLUMNS)}
+    out["steps"]["step"] = out["steps"]["step"].astype(int)
     return out
 
 

@@ -5,7 +5,10 @@
 
 For every (benchmark, ranks, threads) configuration present in any file,
 prints the time per step and setup time from each file, plus the per-step
-speed of each file relative to the first one (>1 = faster than the first).
+speed of each file relative to the first one (>1 = faster than the first),
+and, for files made with FAR3d's own timing output, the per-step breakdown
+into linear / nonlinear / comm / gather / diag. (Older files, from the
+two-run timing method, have no breakdown and show "-" there.)
 """
 
 import json
@@ -59,6 +62,20 @@ def main(paths):
             match = [r for r in run["results"] if (r["benchmark"], r["nproc"], r["threads"]) == key]
             cells.append("%*s" % (col, "%.2f" % match[0]["time_setup"] if match else "-"))
         print("%-16s %5d %4d " % key + " ".join(cells))
+
+    cats = ("linear", "nonlinear", "comm", "gather", "diag")
+    print("\nper-step breakdown [ms]: " + " / ".join(cats))
+    head = "%-16s %5s %4s %-20s " % ("benchmark", "ranks", "thr", "file") + " ".join("%10s" % c for c in cats)
+    print(head)
+    print("-" * len(head))
+    for key in keys:
+        for label, run in zip(labels, runs):
+            match = [r for r in run["results"] if (r["benchmark"], r["nproc"], r["threads"]) == key]
+            if not match:
+                continue
+            b = match[0].get("breakdown_per_step")
+            cells = ["%10.2f" % (1e3 * b[c]) for c in cats] if b else ["%10s" % "-"] * len(cats)
+            print("%-16s %5d %4d %-20s " % (key + (label[:20],)) + " ".join(cells))
     return 0
 
 

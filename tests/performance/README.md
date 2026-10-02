@@ -31,8 +31,9 @@ Useful options:
 - `--output` sets where results go (default `results/<label>.json`).
 - `--workdir` sets where runs happen (default `tests/runs/performance/`).
 
-A full sweep of both benchmarks over 1–4 ranks with `--repeat 2` takes about
-4 minutes on an M2 Pro.
+A full sweep of both benchmarks over 1–4 ranks with `--repeat 2` took about
+4 minutes on an M2 Pro with the earlier two-run method; each repeat is now a
+single run, so expect roughly half that.
 
 ## What gets measured
 
@@ -41,19 +42,34 @@ For each (benchmark, ranks, threads) configuration, the driver:
 1. Does one untimed warm-up run, so the first launch after a build doesn't
    pay for cold caches. A cold first run was observed to take 13 s instead
    of 1 s.
-2. Times the benchmark at a short and a long step count, `--repeat` times
-   each, and keeps the fastest of each.
-3. Splits the time with `T(N) = T_setup + N * t_step`:
-   - `t_step = (T_long - T_short) / (N_long - N_short)` is the time per step
-     (`solve`).
-   - `T_setup` is everything else: MPI start-up, reading and mapping the
-     equilibrium, building and LU-factoring the operator (`linstart`), and
-     end-of-run output.
+2. Runs the benchmark `--repeat` times with `timing_on=1`, so FAR3d writes
+   its own timing file `timing_<numrun>` (`src/timers.f90`, described in the
+   top-level `README.md`). From each run's file it takes:
+   - **setup**: initialization (input, equilibrium) + `linstart` (building
+     and LU-factoring the operator), from the header;
+   - **time per step**: the median of the per-step `total` column, plus the
+     10th/90th percentiles;
+   - **per-step breakdown**: the median of each category column (`linear`,
+     `nonlinear`, `comm`, `gather`, `diag`, `other`).
 
-   This avoids instrumenting the Fortran.
-4. Validates the long run (below).
-5. Reports speedup and parallel efficiency of `t_step` relative to the
-   smallest `ranks × threads` in the sweep.
+   Medians keep the odd slow step (the first one, end-of-run output) out of
+   the per-step figures.
+3. Keeps the fastest repeat (lowest median step time). Every repeat is
+   recorded in the JSON under `repeats`.
+4. Validates every timed run (below).
+5. Reports speedup and parallel efficiency of the time per step relative to
+   the smallest `ranks × threads` in the sweep.
+
+`time_total` is the wall-clock time of the whole MPI launch, measured by the
+driver. Each category is the max over ranks, taken per category; `comm`
+includes time spent waiting for other ranks at a transpose, so load
+imbalance shows up there.
+
+Results files from the earlier two-run method (`T(N) = T_setup + N·t_step`
+fitted from a short and a long run) have the same `time_per_step` and
+`time_setup` keys and still load in `compare_results.py`. Their setup time
+also included MPI start-up and end-of-run output, so it reads higher than
+the new one.
 
 The results JSON also records the machine (CPU, GPU via `nvidia-smi`, core
 count), the build (compiler and flags from the `CMakeCache.txt` next to
@@ -114,7 +130,7 @@ a trusted build:
 python3 run_benchmarks.py --exe ... --benchmarks nonlinear_diiid --np 1 --repeat 1 --update-reference
 ```
 
-## Baseline results (Apple M2 Pro, gfortran 13, MPICH, commit 7a5f3ad)
+## Baseline results (Apple M2 Pro, gfortran 13, MPICH, commit 7a5f3ad; earlier two-run method)
 
 ```
 benchmark        ranks  thr  setup [s]   step [ms] total [s]  speedup  effic.
@@ -148,8 +164,9 @@ What these show:
 
 Benchmarks are defined in `benchmarks.py`. Each one is a `Benchmark` with:
 
-- a function that builds the input deck for a given step count;
-- short and long step counts;
+- a function that builds the input deck for a given step count (the driver
+  turns on `timing_on` itself);
+- the timed step count and a short warm-up step count;
 - a `validate(run)` function that returns a list of problems.
 
 Add it to `BENCHMARKS`. The planned nonlinear mode-count sweep fits this
