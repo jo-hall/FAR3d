@@ -31,7 +31,7 @@ module cotrol
        iflr,r_epflr,LcA0alp,LcA1alp,LcA2alp,LcA3alp,r_epflralp
   real(IDP), dimension(:), allocatable :: stdifpn,stdifun,stdifnfn,stdifvfn,stdifvn,stdifnalpn,stdifvalpn, &
        fctr_dif,dfctr_difdr
-  integer :: noeqn,nvar,ihist,nocpl,maxstp,nstep,ndump,nprint,ndiag,lplots,itime,ext_prof, &
+  integer :: noeqn,nvar,ihist,nocpl,maxstp,nstep,ndump,nprint,ndiag,lplots,itime,ext_prof,timing_on, &
        nstep1,nonlin,twofl_on,epflr_on,alpha_on,iflr_on,ieldamp_on,ivalp, &
        iq,iw,ix1,ix2,iwa,ix1a,ix2a,nstres,trapped_on,DIIID_u,difnr_on, &
        nopsievol_on,noprevol_on,nonfevol_on,nonalpevol_on,src_sink_th_on,src_sink_EP1_on,src_sink_EP2_on, &
@@ -87,6 +87,7 @@ module cotrol
   !  nstep and nstep1 internal loop time step number
   !  ndump indicates the number of step per eigenfunctions output 
   !  nprint indicates the number of step per output in farprt output
+  !  timing_on = 1 writes per-time-step wall-clock timings to timing_<numrun> (timers.f90)
   !  lplots number of modes in the eigenfunctions output 
   !  itime time step calculation option 
   !  noeqn number of equations of the model

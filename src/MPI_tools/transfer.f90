@@ -5,6 +5,7 @@ MODULE transfer
   use processor
   use var_para
   use domain
+  use timers
 
   IMPLICIT NONE
 
@@ -69,6 +70,8 @@ CONTAINS
     integer :: i,j,l,l1,l1t,lp,ln,iPE,iPE1,ierr,tag
     integer, dimension(MPI_STATUS_SIZE) :: status
 
+    call timer_start(T_GATHER)
+
     if (myPE > 0) then
 
        do iPE=0,numPElm1
@@ -117,6 +120,8 @@ CONTAINS
 
     end if
 
+    call timer_stop(T_GATHER)
+
   end subroutine trnsfr0
 
   subroutine trnsfr0e(f,ftype)
@@ -128,6 +133,8 @@ CONTAINS
     real(IDP), dimension(mj_start:,0:) :: f
     integer :: l,le,iPE,ierr,tag
     integer, dimension(MPI_STATUS_SIZE) :: status
+
+    call timer_start(T_GATHER)
 
     call trnsfr0(f,ftype)
 
@@ -150,6 +157,8 @@ CONTAINS
 
     end do
 
+    call timer_stop(T_GATHER)
+
   end subroutine trnsfr0e
 
   subroutine trnsfr(f,ftype,idir)
@@ -160,6 +169,8 @@ CONTAINS
     real(IDP), dimension(mj_start:,0:) :: f
     integer :: i,j,l,l1,l1t,lp,ln,dPE,nPE1,nPE2,ierr,tag1,tag2
     integer, dimension(MPI_STATUS_SIZE) :: status
+
+    call timer_start(T_COMM)
 
     select case (idir)
     case (1)
@@ -219,6 +230,8 @@ CONTAINS
                scp(1,mj_br(nPE2)),mj_inc(nPE2)*lmaxPE(myPE),MPI_DOUBLE_PRECISION,nPE2,tag2,MPI_COMM_WORLD,status,ierr)
        end do
     end select
+
+    call timer_stop(T_COMM)
 
   end subroutine trnsfr
 

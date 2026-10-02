@@ -121,7 +121,7 @@ CONTAINS
          EP_vel_on,Alpha_dens_on,Alpha_vel_on,DIIID_u,Eq_vel_on,Eq_velp_on,q_prof_on,deltaq,deltaiota,Eq_Presseq_on, &
          Eq_Presstot_on,Edge_on,edge_p,Auto_grid_on,nopsievol_on,noprevol_on,nonfevol_on,nonalpevol_on, &
          src_sink_th_on,src_sink_EP1_on,src_sink_EP2_on,src_sink_DIIID_on,src_sink_ITER_on,rsrc,wsrc,asrc, &
-         rsrc_EP1,wsrc_EP1,asrc_EP1,rsrc_EP2,wsrc_EP2,asrc_EP2,AWfctr,Nfctr,AWfctr_dif,Rfctr,Wfctr,B_par_on,old_rd
+         rsrc_EP1,wsrc_EP1,asrc_EP1,rsrc_EP2,wsrc_EP2,asrc_EP2,AWfctr,Nfctr,AWfctr_dif,Rfctr,Wfctr,B_par_on,old_rd,timing_on
     namelist/nam_arr/mm,nn,mmeq,nneq,widthi,gammai,cnep,ctep,cvep,cnfp,cvfp,cnfpalp,cvfpalp,eqvt,eqvp, &
          srcsinkth,srcsinkEP1,srcsinkEP2
 

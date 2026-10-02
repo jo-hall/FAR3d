@@ -11,6 +11,7 @@ subroutine solve
   use mult_mod
   use matrix
   use scratch
+  use timers
 
   implicit none
 
@@ -56,6 +57,9 @@ subroutine solve
 
 !  From previous step we have yt=(L-R*Dt/2)Y(t), and we want to build yt=(L+R*Dt/2)Y(t)
 !  So we change sign and add 2*L*Y(t).
+
+  ! timing (timers.f90): the step is linear except the nonlinear blocks below
+  call timer_start(T_LINEAR)
 
   yt=-yt
 
@@ -140,6 +144,8 @@ subroutine solve
   end if
 
   if (nonlin /= 0) then
+
+     call timer_start(T_NONLIN)
   
 ! transfer (L+R*Dt/2)Y(t) to secondary arrays
 
@@ -283,6 +289,8 @@ subroutine solve
 
      call cnvt(1)
 
+     call timer_stop(T_NONLIN)
+
   end if
   
 ! find predicted values
@@ -297,8 +305,6 @@ subroutine solve
      end do
   end do
 
-  ! call cpu_time(time_sm)
-
   do it=n_start,n_end
      loca=nskpn(it)+1
      loci=nskpin(it)+1
@@ -307,13 +313,12 @@ subroutine solve
      call solbt(mnum3,mjm1,amat(loca:),bmat(loca:),cmat(loca:),xt(locx:),ipc(loci:))
   end do
 
-  ! call cpu_time(time_em)
-  ! time_m=time_m+time_em-time_sm
-
 ! second half-step
 
 
   if (nonlin /= 0) then
+
+     call timer_start(T_NONLIN)
 
 ! recover (L+R*Dt/2)Y(t) to secondary arrays
 
@@ -459,6 +464,7 @@ subroutine solve
 
 ! find time advanced values
 
+     call timer_start(T_LINEAR)
      xt=yt
      do i=n_start,n_end
         mnum3=noeqn*mnumn(i)
@@ -468,8 +474,6 @@ subroutine solve
         end do
      end do
 
-     ! call cpu_time(time_sm)
-
      do it=n_start,n_end
         loca=nskpn(it)+1
         loci=nskpin(it)+1
@@ -478,8 +482,7 @@ subroutine solve
         call solbt(mnum3,mjm1,amat(loca:),bmat(loca:),cmat(loca:),xt(locx:),ipc(loci:))
      end do
 
-     ! call cpu_time(time_em)
-     ! time_m=time_m+time_em-time_sm
+     call timer_stop(T_LINEAR)
 
 ! save current values for the next step
 
@@ -502,10 +505,14 @@ subroutine solve
         vprlalp_nl(:,:,2)=vprlalp_nl(:,:,1)
      end if
 
+     call timer_stop(T_NONLIN)
+
   end if
 
 ! transfer time advanced values to original arrays
 
   call cnvt(2)
+
+  call timer_stop(T_LINEAR)
 
 end subroutine solve

@@ -20,6 +20,10 @@ module input_model
 ! chipr, ...) are omitted entirely, since this repo has exactly one
 ! equilibrium path (VMEC, via equilibrium.f90's seteq/vmec) and none of
 ! those fields are declared anywhere in this codebase.
+!
+! Optional trailing fields: entries after srcsinkEP2 may be omitted, so
+! Input_Model files written before they existed still read unchanged.
+! Currently just timing_on (per-step timing file, see timers.f90).
 
   use param
   use cotrol
@@ -281,6 +285,9 @@ contains
     read(iunit,'(a1)') cdum0
     read(iunit,*) srcsinkEP2(0:10)
 
+    ! Optional trailing fields (keep their dfault value when absent).
+    call skip_and_read_i_opt(iunit,timing_on)
+
   end subroutine read_input_model_arrays
 
   subroutine skip_and_read_i(iunit,var)
@@ -290,6 +297,18 @@ contains
     read(iunit,'(a1)') cdum0
     read(iunit,*) var
   end subroutine skip_and_read_i
+
+  ! Like skip_and_read_i, but leaves var unchanged at end of file.
+  subroutine skip_and_read_i_opt(iunit,var)
+    integer, intent(in) :: iunit
+    integer, intent(inout) :: var
+    character(len=1) :: cdum0
+    integer :: ios, tmp
+    read(iunit,'(a1)',iostat=ios) cdum0
+    if (ios /= 0) return
+    read(iunit,*,iostat=ios) tmp
+    if (ios == 0) var = tmp
+  end subroutine skip_and_read_i_opt
 
   subroutine skip_and_read_r(iunit,var)
     integer, intent(in) :: iunit

@@ -119,6 +119,9 @@ class Case:
     def __getitem__(self, name):
         return self._entry(name)[2]
 
+    def __contains__(self, name):
+        return any(e[0] == name.lower() for e in self.entries)
+
     def set(self, **values):
         """Set values by name. Python values are converted to Fortran text:
         bool -> .true./.false., float -> repr, list -> comma separated."""
@@ -146,6 +149,10 @@ class Case:
             for group, members in (("nam_par", nam_par), ("nam_arr", nam_arr)):
                 f.write("&%s\n" % group)
                 for name in members:
+                    # optional trailing Input_Model fields (e.g. timing_on) may be
+                    # absent; a namelist read leaves omitted members at their default
+                    if name not in self:
+                        continue
                     value = self[name]
                     if not _is_fortran_literal(value):
                         value = "'%s'" % value

@@ -1,6 +1,7 @@
 subroutine dlstar(ss,ff,itypf,wk1,wk2,wkeq1,wkeq2,c1,c2)
 
   use mpi
+  use timers
   use param
   use processor
   use var_para
@@ -66,6 +67,8 @@ subroutine dlstar(ss,ff,itypf,wk1,wk2,wkeq1,wkeq2,c1,c2)
      end do
   end if
 
+  ! halo exchange with the neighbouring radial slabs
+  call timer_start(T_COMM)
   if (myPE < numPEsm1) then
      do l=1,lmax
         ssend(l)=ss(mj_end-1,l)
@@ -94,6 +97,7 @@ subroutine dlstar(ss,ff,itypf,wk1,wk2,wkeq1,wkeq2,c1,c2)
         ss(mj_end,l)=srecv(l)
      end do
   end if
+  call timer_stop(T_COMM)
 
   ss(mj_start:mj_end,0)=0. 
   ff(mj_start:mj_end,0)=0. 

@@ -29,6 +29,7 @@ program far3d
   use scratch
   use openacc
   use input_model
+  use timers
   
   implicit none
 
@@ -41,7 +42,7 @@ program far3d
        EP_vel_on,Alpha_dens_on,Alpha_vel_on,DIIID_u,Eq_vel_on,Eq_velp_on,q_prof_on,deltaq,deltaiota,Eq_Presseq_on, &
        Eq_Presstot_on,Edge_on,edge_p,Auto_grid_on,nopsievol_on,noprevol_on,nonfevol_on,nonalpevol_on, &
        src_sink_th_on,src_sink_EP1_on,src_sink_EP2_on,src_sink_DIIID_on,src_sink_ITER_on,rsrc,wsrc,asrc, &
-       rsrc_EP1,wsrc_EP1,asrc_EP1,rsrc_EP2,wsrc_EP2,asrc_EP2,AWfctr,Nfctr,AWfctr_dif,Rfctr,Wfctr,B_par_on,old_rd
+       rsrc_EP1,wsrc_EP1,asrc_EP1,rsrc_EP2,wsrc_EP2,asrc_EP2,AWfctr,Nfctr,AWfctr_dif,Rfctr,Wfctr,B_par_on,old_rd,timing_on
   namelist/nam_arr/mm,nn,mmeq,nneq,widthi,gammai,cnep,ctep,cvep,cnfp,cvfp,cnfpalp,cvfpalp,eqvt,eqvp, &
        srcsinkth,srcsinkEP1,srcsinkEP2
 
@@ -80,6 +81,7 @@ program far3d
 ! Find the ID of this PE
   call MPI_COMM_RANK(MPI_COMM_WORLD, myPE  , ierror)
   numPEsm1 = numPEs-1
+  call timers_init
 #ifdef _OPENACC
   numdev = acc_get_num_devices(ACC_DEVICE_NVIDIA)
   call acc_set_device_num(myPE,ACC_DEVICE_NVIDIA)
@@ -363,11 +365,15 @@ program far3d
 !  Subroutine linstart creates the tridiagonal matrix where the right and left side of the
 !  model equations are added  
 
+     call timers_mark_linstart(.true.)
      call linstart
+     call timers_mark_linstart(.false.)
+     call timers_open(timing_on == 1,numrun(1)//numrun(2),nonlin,mj,lmax,maxstp)
 
      iend = 0
      do while (nstep < nstep1+maxstp)
 
+        call timers_step_begin
         nstep=nstep+1
 
         ! if (nstep_count(i) == nstep) then
@@ -382,15 +388,24 @@ program far3d
 !  Subroutine energy calculates the radial and poloidal component of the magentic and velocity fields
 !  as well as kinetic and magnetic energy of the system.
 
-        if (mod(nstep,nprint) == 0 .or. iend /= 0) call energy(1)
+        if (mod(nstep,nprint) == 0 .or. iend /= 0) then
+           call timer_start(T_DIAG)
+           call energy(1)
+           call timer_stop(T_DIAG)
+        end if
         call solve
-        if (mod(nstep,nprint) == 0 .or. iend /= 0) call energy(2)
+        if (mod(nstep,nprint) == 0 .or. iend /= 0) then
+           call timer_start(T_DIAG)
+           call energy(2)
+           call timer_stop(T_DIAG)
+        end if
 
         call trnsfr0(psi,1)
         call trnsfr0(phi,-1)
         call trnsfr0(nf,1)
         call trnsfr0(vprlf,-1)
 
+        call timer_start(T_DIAG)
         if (mod(nstep,ndump) == 0 .and. nstep /= nstep1+maxstp) then
            call trnsfr0(pr,1)
            call trnsfr0(vthprlf,-1)
@@ -417,6 +432,9 @@ program far3d
            close(unit=82)
            close(unit=77)
         endif
+        call timer_stop(T_DIAG)
+
+        call timers_step_end(nstep,time)
 
      end do
 
@@ -439,6 +457,7 @@ program far3d
      numrun(3)="z"
      if (myPE == 0) call wrdump(idump,.true.)
      call endrun
+     call timers_finalize
 
   end if
 

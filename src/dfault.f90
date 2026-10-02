@@ -24,6 +24,7 @@ subroutine dfault
   nstep=0
   ndump=100000
   nprint=100
+  timing_on=0
   lplots=0
   itime=2
   dt0=0.1
