@@ -1,0 +1,274 @@
+!!!!!!!!!!! nstres: 0 = new run, nonzero = continuation run
+0
+!!!!!!!!!!! numrun: this run's 2-character run-number pair
+00 00
+!!!!!!!!!!! numruno: previous run's 3-character run-number triple (continuation runs only)
+00 00 z
+!!!!!!!!!!! eq_name: VMEC/BOOZ_XFORM equilibrium binary filename
+woutb
+!!!!!!!!!!! maxstp: maximum number of time steps
+1000
+!!!!!!!!!!! ndump: dump-file write interval (time steps)
+1000
+!!!!!!!!!!! nprint: console print interval (time steps)
+100
+!!!!!!!!!!! ndiag: diagnostic write interval (time steps)
+1000
+!!!!!!!!!!! lplots: number of radial locations for plotted diagnostics
+8
+!!!!!!!!!!! itime: time-stepping scheme selector
+2
+!!!!!!!!!!! dt0: time step
+2.0
+!!!!!!!!!!! nonlin: 0 = linear run, 1 = nonlinear run
+0
+!!!!!!!!!!! mj: number of radial grid points
+1000
+!!!!!!!!!!! lmax: total number of dynamic modes
+29
+!!!!!!!!!!! leqmax: number of equilibrium modes
+21
+!!!!!!!!!!! ni: number of interior grid intervals
+499
+!!!!!!!!!!! nis: number of interior grid intervals in the source region
+251
+!!!!!!!!!!! ne: number of edge grid intervals
+250
+!!!!!!!!!!! delta: grid packing parameter
+0.25
+!!!!!!!!!!! rc: grid packing radius
+0.625
+!!!!!!!!!!! fti: ion thermal fraction
+0.95
+!!!!!!!!!!! fte: electron thermal fraction
+0.95
+!!!!!!!!!!! difnr_on: extra numerical diffusion on/off
+0
+!!!!!!!!!!! stdifp: pressure diffusivity
+1.E-7
+!!!!!!!!!!! stdifu: vorticity diffusivity
+1.E-7
+!!!!!!!!!!! stdifv: parallel velocity diffusivity
+1.E-7
+!!!!!!!!!!! eps: inverse aspect ratio
+0.1
+!!!!!!!!!!! bet0: on-axis beta
+0.01
+!!!!!!!!!!! etascl: resistivity scale factor
+1.0
+!!!!!!!!!!! reta: resistivity profile radius
+0.5
+!!!!!!!!!!! eta0: on-axis resistivity
+1.0
+!!!!!!!!!!! etalmb: resistivity profile width
+0.5
+!!!!!!!!!!! ietaeq: equilibrium resistivity profile on/off
+1
+!!!!!!!!!!! s: Lundquist number (tau_R/tau_A)
+5.e6
+!!!!!!!!!!! gamma: adiabatic index
+0.0
+!!!!!!!!!!! ipert: initial-perturbation mode selector
+1
+!!!!!!!!!!! pertscl: initial-perturbation amplitude
+1.0
+!!!!!!!!!!! m0dy: number of purely-equilibrium (non-dynamic) modes
+0
+!!!!!!!!!!! nocpl: disable mode coupling if 1
+0
+!!!!!!!!!!! xle: edge safety-factor scale factor
+1.0
+!!!!!!!!!!! omcy: ion cyclotron frequency (normalization)
+260.7024
+!!!!!!!!!!! bet0_f: on-axis fast-particle beta
+7.32939e-03
+!!!!!!!!!!! stdifnf: fast-particle density diffusivity
+1.E-7
+!!!!!!!!!!! stdifvf: fast-particle parallel velocity diffusivity
+1.E-7
+!!!!!!!!!!! stdifnalp: second EP species density diffusivity
+1.E-7
+!!!!!!!!!!! stdifvalp: second EP species parallel velocity diffusivity
+1.E-7
+!!!!!!!!!!! ext_prof: use external profile file if 1
+1
+!!!!!!!!!!! ext_prof_name: external profile filename
+far3d_profiles.txt
+!!!!!!!!!!! epflr_on: EP finite-Larmor-radius effects on/off
+0
+!!!!!!!!!!! r_epflr: EP finite-Larmor-radius parameter
+7.91317e-03
+!!!!!!!!!!! alpha_on: second EP (alpha) population on/off
+0
+!!!!!!!!!!! iflr_on: thermal finite-Larmor-radius effects on/off
+0
+!!!!!!!!!!! iflr: thermal finite-Larmor-radius parameter
+1.68483e-03
+!!!!!!!!!!! LcA0: Landau closure coefficient 1
+2.718
+!!!!!!!!!!! LcA1: Landau closure coefficient 2
+-1.311
+!!!!!!!!!!! LcA2: fast-particle beta correction
+0.889
+!!!!!!!!!!! LcA3: fast-particle thermal/Alfven velocity ratio correction
+1.077
+!!!!!!!!!!! Adens: fast-particle density profile flatness (no external profiles)
+7.0
+!!!!!!!!!!! Bdens: fast-particle density gradient location (no external profiles)
+0.1
+!!!!!!!!!!! twofl_on: two-fluid effects on/off
+0
+!!!!!!!!!!! dpres: pressure profile parameter
+0.35
+!!!!!!!!!!! bet0_alp: on-axis second-EP-species beta
+0.05
+!!!!!!!!!!! Adensalp: second-EP-species density profile flatness
+7.0
+!!!!!!!!!!! Bdensalp: second-EP-species density gradient location
+0.2
+!!!!!!!!!!! LcA0alp: second-EP-species Landau closure coefficient 1
+2.718
+!!!!!!!!!!! LcA1alp: second-EP-species Landau closure coefficient 2
+-1.311
+!!!!!!!!!!! LcA2alp: second-EP-species beta correction
+0.889
+!!!!!!!!!!! LcA3alp: second-EP-species thermal/Alfven velocity ratio correction
+1.077
+!!!!!!!!!!! omcyalp: second-EP-species cyclotron frequency
+15.88
+!!!!!!!!!!! r_epflralp: second-EP-species finite-Larmor-radius parameter
+0.02
+!!!!!!!!!!! omegar: rotation frequency
+0.4
+!!!!!!!!!!! ieldamp_on: electron Landau damping on/off
+0
+!!!!!!!!!!! omcyb: boundary ion cyclotron frequency
+0.01
+!!!!!!!!!!! rbound: boundary layer radius
+0.002
+!!!!!!!!!!! trapped_on: trapped-particle effects on/off
+0
+!!!!!!!!!!! betath_factor: thermal beta scale factor
+1.0
+!!!!!!!!!!! spe1: first EP species mass-to-proton-mass ratio
+4
+!!!!!!!!!!! spe2: second EP species mass-to-proton-mass ratio
+4
+!!!!!!!!!!! EP_dens_on: external EP density profile on/off
+0
+!!!!!!!!!!! EP_vel_on: external EP velocity profile on/off
+0
+!!!!!!!!!!! Alpha_dens_on: external second-EP-species density profile on/off
+0
+!!!!!!!!!!! Alpha_vel_on: external second-EP-species velocity profile on/off
+0
+!!!!!!!!!!! DIIID_u: DIII-D-specific velocity profile selector
+0
+!!!!!!!!!!! Eq_vel_on: external equilibrium toroidal velocity profile on/off
+0
+!!!!!!!!!!! Eq_velp_on: external equilibrium poloidal velocity profile on/off
+0
+!!!!!!!!!!! q_prof_on: external safety-factor profile on/off
+0
+!!!!!!!!!!! deltaq: safety-factor displacement
+0.0
+!!!!!!!!!!! deltaiota: iota displacement
+0.0
+!!!!!!!!!!! Eq_Presseq_on: external thermal pressure profile on/off
+0
+!!!!!!!!!!! Eq_Presstot_on: external thermal+EP pressure profile on/off
+0
+!!!!!!!!!!! Edge_on: VMEC data extrapolation on/off
+1
+!!!!!!!!!!! edge_p: edge extrapolation parameter
+900
+!!!!!!!!!!! Auto_grid_on: evenly-spaced grid on/off
+0
+!!!!!!!!!!! nopsievol_on: neglect psi nonlinear terms if 1
+0
+!!!!!!!!!!! noprevol_on: neglect thermal pressure nonlinear terms if 1
+0
+!!!!!!!!!!! nonfevol_on: neglect EP density nonlinear terms if 1
+0
+!!!!!!!!!!! nonalpevol_on: neglect second-EP-species density nonlinear terms if 1
+0
+!!!!!!!!!!! src_sink_th_on: thermal source/sink on/off
+0
+!!!!!!!!!!! src_sink_EP1_on: first-EP-species source/sink on/off
+0
+!!!!!!!!!!! src_sink_EP2_on: second-EP-species source/sink on/off
+0
+!!!!!!!!!!! src_sink_DIIID_on: DIII-D default source/sink case on/off
+0
+!!!!!!!!!!! src_sink_ITER_on: ITER default source/sink case on/off
+0
+!!!!!!!!!!! rsrc: thermal source radial location
+0.45
+!!!!!!!!!!! wsrc: thermal source width
+0.2
+!!!!!!!!!!! asrc: thermal source intensity
+0.0
+!!!!!!!!!!! rsrc_EP1: first-EP-species source radial location
+0.45
+!!!!!!!!!!! wsrc_EP1: first-EP-species source width
+0.2
+!!!!!!!!!!! asrc_EP1: first-EP-species source intensity
+0.0
+!!!!!!!!!!! rsrc_EP2: second-EP-species source radial location
+0.45
+!!!!!!!!!!! wsrc_EP2: second-EP-species source width
+0.2
+!!!!!!!!!!! asrc_EP2: second-EP-species source intensity
+0.0
+!!!!!!!!!!! AWfctr: meaning undocumented, preserved for compatibility (see src/dfault.f90:151-155)
+100.0
+!!!!!!!!!!! Nfctr: meaning undocumented, preserved for compatibility (see src/dfault.f90:151-155)
+10.0
+!!!!!!!!!!! AWfctr_dif: meaning undocumented, preserved for compatibility (see src/dfault.f90:151-155)
+100.0
+!!!!!!!!!!! Rfctr: meaning undocumented, preserved for compatibility (see src/dfault.f90:151-155)
+0.9
+!!!!!!!!!!! Wfctr: meaning undocumented, preserved for compatibility (see src/dfault.f90:151-155)
+0.01
+!!!!!!!!!!! B_par_on: parallel magnetic field perturbation on/off
+0
+!!!!!!!!!!! old_rd: true if the fs##### dump file predates this code version
+.false.
+!!!!!!!!!!! matrix_out: eigensolver-input output on/off (not implemented yet)
+.false.
+!!!!!!!!!!! mm(1:lmax): poloidal mode numbers of the dynamic modes
+4,3,2,1,-4,-3,-2,-1,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10
+!!!!!!!!!!! nn(1:lmax): toroidal mode numbers of the dynamic modes
+4*1,4*-1,21*0
+!!!!!!!!!!! mmeq(1:leqmax): poloidal mode numbers of the equilibrium modes
+-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10
+!!!!!!!!!!! nneq(1:leqmax): toroidal mode numbers of the equilibrium modes
+21*0
+!!!!!!!!!!! widthi(1:lmax): initial-perturbation radial width per mode
+1.e-140,28*0.0
+!!!!!!!!!!! gammai(1:lmax): initial-perturbation growth rate per mode
+29*0.0
+!!!!!!!!!!! cnep(0:10): thermal density profile expansion coefficients
+5.349622177242649E-01,-8.158145079082755E-01,9.051313827341806E+00,-9.908622794510921E+01,5.436130071633405E+02,-1.683588662473988E+03,3.184577674238863E+03,-3.789454655055126E+03,2.786069409436922E+03,-1.160818784526462E+03,2.100700986027593E+02
+!!!!!!!!!!! ctep(0:10): thermal temperature profile expansion coefficients
+2.466297479423131E+00,-3.123519794977899E+00,1.455166487731591E+01,-8.288042333625850E+01,3.310397776819081E+02,-9.891030935273041E+02,2.133646774676442E+03,-3.082790956275732E+03,2.757324727437074E+03,-1.367187266111290E+03,2.864529219889411E+02
+!!!!!!!!!!! cvep(0:10): thermal velocity profile expansion coefficients
+5.349622177242649E-01,-8.158145079082755E-01,9.051313827341806E+00,-9.908622794510921E+01,5.436130071633405E+02,-1.683588662473988E+03,3.184577674238863E+03,-3.789454655055126E+03,2.786069409436922E+03,-1.160818784526462E+03,2.100700986027593E+02
+!!!!!!!!!!! cnfp(0:10): fast-particle density profile expansion coefficients
+0.3,0.1,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+!!!!!!!!!!! cvfp(0:10): fast-particle velocity profile expansion coefficients
+0.32,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+!!!!!!!!!!! cnfpalp(0:10): second-EP-species density profile expansion coefficients
+5.349622177242649E-01,-8.158145079082755E-01,9.051313827341806E+00,-9.908622794510921E+01,5.436130071633405E+02,-1.683588662473988E+03,3.184577674238863E+03,-3.789454655055126E+03,2.786069409436922E+03,-1.160818784526462E+03,2.100700986027593E+02
+!!!!!!!!!!! cvfpalp(0:10): second-EP-species velocity profile expansion coefficients
+0.32,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+!!!!!!!!!!! eqvt(0:10): equilibrium toroidal velocity profile expansion coefficients
+0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+!!!!!!!!!!! eqvp(0:10): equilibrium poloidal velocity profile expansion coefficients
+0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+!!!!!!!!!!! srcsinkth(0:10): thermal source/sink profile expansion coefficients
+0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+!!!!!!!!!!! srcsinkEP1(0:10): first-EP-species source/sink profile expansion coefficients
+0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+!!!!!!!!!!! srcsinkEP2(0:10): second-EP-species source/sink profile expansion coefficients
+0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
